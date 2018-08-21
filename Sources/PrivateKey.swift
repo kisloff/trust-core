@@ -10,7 +10,7 @@ public final class PrivateKey: Hashable, CustomStringConvertible {
     /// Validates that raw data is a valid private key.
     static public func isValid(data: Data) -> Bool {
         // Check length
-        if data.count != Ethereum.privateKeySize {
+        if data.count != Ethereum.privateKeySize && data.count != Bitcoin.privateKeySize {
             return false
         }
 
@@ -62,13 +62,30 @@ public final class PrivateKey: Hashable, CustomStringConvertible {
     }
 
     /// Public key.
-    public func publicKey(for type: BlockchainType) -> PublicKey {
+    public func publicKey(for type: BlockchainType, compressed: Bool = false) -> PublicKey {
+        let pkData: Data
+        if compressed {
+            pkData = Crypto.getCompressedPublicKey(from: data)
+        } else {
+            pkData = Crypto.getPublicKey(from: data)
+        }
+
         switch type {
         case .bitcoin:
-            return BitcoinPublicKey(data: Crypto.getBitcoinPublicKey(from: data))!
+            return BitcoinPublicKey(data: pkData)!
         case .ethereum:
-            return EthereumPublicKey(data: Crypto.getEthereumPublicKey(from: data))!
+            return EthereumPublicKey(data: pkData)!
         }
+    }
+
+    /// Signs a hash.
+    public func sign(hash: Data) -> Data {
+        return Crypto.sign(hash: hash, privateKey: data)
+    }
+
+    /// Signs a hash, encodes the result using DER.
+    public func signAsDER(hash: Data) -> Data {
+        return Crypto.signAsDER(hash: hash, privateKey: data)
     }
 
     public var description: String {

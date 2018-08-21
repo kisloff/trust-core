@@ -11,13 +11,13 @@
 
 // MARK: - Elliptic Curve Cryptography
 
-+ (nonnull NSData *)getEthereumPublicKeyFrom:(nonnull NSData *)privateKey {
++ (nonnull NSData *)getPublicKeyFrom:(nonnull NSData *)privateKey {
     NSMutableData *publicKey = [[NSMutableData alloc] initWithLength:65];
     ecdsa_get_public_key65(&secp256k1, privateKey.bytes, publicKey.mutableBytes);
     return publicKey;
 }
 
-+ (nonnull NSData *)getBitcoinPublicKeyFrom:(nonnull NSData *)privateKey {
++ (nonnull NSData *)getCompressedPublicKeyFrom:(nonnull NSData *)privateKey {
     NSMutableData *publicKey = [[NSMutableData alloc] initWithLength:33];
     ecdsa_get_public_key33(&secp256k1, privateKey.bytes, publicKey.mutableBytes);
     return publicKey;
@@ -29,6 +29,15 @@
     ecdsa_sign_digest(&secp256k1, privateKey.bytes, hash.bytes, signature.mutableBytes, &by, nil);
     ((uint8_t *)signature.mutableBytes)[64] = by;
     return signature;
+}
+
++ (nonnull NSData *)signAsDERHash:(nonnull NSData *)hash privateKey:(nonnull NSData *)privateKey {
+    NSMutableData *signature = [[NSMutableData alloc] initWithLength:64];
+    NSMutableData *der = [[NSMutableData alloc] initWithLength:72];
+    ecdsa_sign_digest(&secp256k1, privateKey.bytes, hash.bytes, signature.mutableBytes, nil, nil);
+    int len = ecdsa_sig_to_der(signature.bytes, der.mutableBytes);
+    [der setLength:len];
+    return der;
 }
 
 + (BOOL)verifySignature:(nonnull NSData *)signature message:(nonnull NSData *)message publicKey:(nonnull NSData *)publicKey {

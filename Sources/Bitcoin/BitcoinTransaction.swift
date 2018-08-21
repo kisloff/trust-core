@@ -63,7 +63,7 @@ public struct BitcoinTransaction: BinaryEncoding {
     }
 }
 
-public struct BitcoinTransactionInput: BinaryEncoding {
+public final class BitcoinTransactionInput: BinaryEncoding {
     /// Setting `sequence` to this value for every input in a transaction disables `lockTime`.
     public static let sequenceFinal = 0xffffffff as UInt32
 
@@ -71,7 +71,7 @@ public struct BitcoinTransactionInput: BinaryEncoding {
     public var previousOutput: BitcoinOutPoint
 
     /// Computational Script for confirming transaction authorization
-    public var script: [UInt8]
+    public var script: BitcoinScript
 
     /// Transaction version as defined by the sender.
     ///
@@ -80,7 +80,7 @@ public struct BitcoinTransactionInput: BinaryEncoding {
 
     public var scriptWitness = BitcoinScriptWitness()
 
-    public init(previousOutput: BitcoinOutPoint, script: [UInt8], sequence: UInt32) {
+    public init(previousOutput: BitcoinOutPoint, script: BitcoinScript, sequence: UInt32) {
         self.previousOutput = previousOutput
         self.script = script
         self.sequence = sequence
@@ -88,7 +88,7 @@ public struct BitcoinTransactionInput: BinaryEncoding {
 
     public func encode(into data: inout Data) {
         previousOutput.encode(into: &data)
-        script.encode(into: &data)
+        script.data.encode(into: &data)
         sequence.encode(into: &data)
     }
 }
@@ -105,6 +105,15 @@ public struct BitcoinOutPoint: BinaryEncoding, Equatable {
         self.index = index
     }
 
+    public mutating func setNull() {
+        hash.removeAll()
+        index = UInt32(bitPattern: -1)
+    }
+
+    public var isNull: Bool {
+        return hash.isEmpty && index == UInt32(bitPattern: -1)
+    }
+
     public static func == (lhs: BitcoinOutPoint, rhs: BitcoinOutPoint) -> Bool {
         return lhs.hash == rhs.hash && lhs.index == rhs.index
     }
@@ -115,21 +124,30 @@ public struct BitcoinOutPoint: BinaryEncoding, Equatable {
     }
 }
 
-public struct BitcoinTransactionOutput: BinaryEncoding {
+public final class BitcoinTransactionOutput: BinaryEncoding {
     /// Transaction Value
     public var value: Int64
 
     /// Usually contains the public key as a Bitcoin script setting up conditions to claim this output.
-    public var script: [UInt8]
+    public var script: BitcoinScript
 
-    public init(value: Int64, script: [UInt8]) {
+    public init() {
+        value = -1
+        script = BitcoinScript(bytes: [])
+    }
+
+    public var isNull: Bool {
+        return value == -1
+    }
+
+    public init(value: Int64, script: BitcoinScript) {
         self.value = value
         self.script = script
     }
 
     public func encode(into data: inout Data) {
         value.encode(into: &data)
-        script.encode(into: &data)
+        script.data.encode(into: &data)
     }
 }
 

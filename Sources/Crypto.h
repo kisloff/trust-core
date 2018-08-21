@@ -10,11 +10,11 @@
 
 // MARK: - Elliptic Curve Cryptography
 
-/// Extracts the public key from a Ethereum private key.
-+ (nonnull NSData *)getEthereumPublicKeyFrom:(nonnull NSData *)privateKey NS_SWIFT_NAME(getEthereumPublicKey(from:));
+/// Extracts the public key from a private key.
++ (nonnull NSData *)getPublicKeyFrom:(nonnull NSData *)privateKey NS_SWIFT_NAME(getPublicKey(from:));
 
-/// Extracts the public key from a Bitcoin private key.
-+ (nonnull NSData *)getBitcoinPublicKeyFrom:(nonnull NSData *)privateKey NS_SWIFT_NAME(getBitcoinPublicKey(from:));
+/// Extracts the compressed public key from a private key.
++ (nonnull NSData *)getCompressedPublicKeyFrom:(nonnull NSData *)privateKey NS_SWIFT_NAME(getCompressedPublicKey(from:));
 
 /// Signs a hash with a private key.
 ///
@@ -22,6 +22,13 @@
 /// @param privateKey private key to use for signing
 /// @return signature is in the 65-byte [R || S || V] format where V is 0 or 1.
 + (nonnull NSData *)signHash:(nonnull NSData *)hash privateKey:(nonnull NSData *)privateKey NS_SWIFT_NAME(sign(hash:privateKey:));
+
+/// Signs a hash with a private key, encodes the result as DER.
+///
+/// @param hash hash to sign
+/// @param privateKey private key to use for signing
+/// @return signature in the DER format.
++ (nonnull NSData *)signAsDERHash:(nonnull NSData *)hash privateKey:(nonnull NSData *)privateKey NS_SWIFT_NAME(signAsDER(hash:privateKey:));;
 
 /// Verifies a hash signature.
 ///
