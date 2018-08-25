@@ -33,7 +33,9 @@ public struct RLP {
             return encodeBigInt(bigint)
         case let biguint as BigUInt:
             return encodeBigUInt(biguint)
-        case let transaction as Transaction:
+        case let transaction as EthereumTransaction:
+            return encodeTransaction(transaction)
+        case let transaction as WanchainTransaction:
             return encodeTransaction(transaction)
         case let data as Data:
             return encodeData(data)
@@ -90,17 +92,32 @@ public struct RLP {
         return encodeData(encoded)
     }
 
-    static func encodeTransaction(_ transaction: Transaction) -> Data? {
+    static func encodeTransaction(_ transaction: EthereumTransaction) -> Data? {
         return encodeList([
             transaction.nonce,
             transaction.gasPrice,
             transaction.gasLimit,
-            transaction.to.data,
+            transaction.to?.data ?? Data(),
             transaction.amount,
             transaction.payload ?? Data(),
             transaction.v,
             transaction.r,
             transaction.s,
+        ])
+    }
+
+    static func encodeTransaction(_ transaction: WanchainTransaction) -> Data? {
+        return encodeList([
+            transaction.type.rawValue,
+            transaction.transaction.nonce,
+            transaction.transaction.gasPrice,
+            transaction.transaction.gasLimit,
+            transaction.transaction.to?.data ?? Data(),
+            transaction.transaction.amount,
+            transaction.transaction.payload ?? Data(),
+            transaction.transaction.v,
+            transaction.transaction.r,
+            transaction.transaction.s,
         ])
     }
 
