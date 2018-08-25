@@ -9,10 +9,14 @@ import Foundation
 public final class BitcoinPublicKey: PublicKey {
     /// Validates that raw data is a valid public key.
     static public func isValid(data: Data) -> Bool {
-        if data.count != 33 {
-            return false
+        if data.count == 33 && data[0] == 2 || data[0] == 3 {
+            // Compressed
+            return true
+        } else if data.count == 65 && data[0] == 4 {
+            // Uncompressed
+            return true
         }
-        return true
+        return false
     }
 
     /// Coin this key is for.
@@ -20,6 +24,11 @@ public final class BitcoinPublicKey: PublicKey {
 
     /// Raw representation of the public key.
     public let data: Data
+
+    /// Whether this is a compressed key.
+    public var isCompressed: Bool {
+        return data.count == 33 && data[0] == 2 || data[0] == 3
+    }
 
     /// Address.
     public var address: Address {
